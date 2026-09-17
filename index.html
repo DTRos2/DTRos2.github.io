@@ -9,7 +9,7 @@
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d1117; color: #c9d1d9; overflow-x: hidden; }
     
     /* 3D Canvas Background */
-    #canvas-container { fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; position: fixed; }
+    #canvas-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
     
     /* Content Overlay */
     .content { position: relative; z-index: 2; pointer-events: none; }
@@ -34,6 +34,7 @@
 
     /* Chat Section */
     #chat-section { margin-bottom: 100px; }
+    #giscus-container { margin-top: 20px; min-height: 200px; }
   </style>
   <!-- Three.js Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -78,9 +79,21 @@
       
       <!-- Giscus 댓글/채팅 연동 공간 -->
       <div id="giscus-container">
-        <p style="color: #8b949e; text-align: center; padding: 40px 0;">
-          (이곳에 Giscus 스크립트 또는 Firebase 채팅 창을 삽입하세요)
-        </p>
+        <script src="https://giscus.app/client.js"
+                data-repo="[YOUR_GITHUB_USERNAME]/[YOUR_REPO_NAME]"
+                data-repo-id="[YOUR_REPO_ID]"
+                data-category="General"
+                data-category-id="[YOUR_CATEGORY_ID]"
+                data-mapping="pathname"
+                data-strict="0"
+                data-reactions-enabled="1"
+                data-emit-metadata="0"
+                data-input-position="bottom"
+                data-theme="dark"
+                data-lang="ko"
+                crossorigin="anonymous"
+                async>
+        </script>
       </div>
     </section>
   </div>
