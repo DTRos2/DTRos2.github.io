@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub 기반 채팅방</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 10px; }
+    #chat-box { border: 1px solid #ccc; height: 350px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+    .msg { margin-bottom: 8px; padding: 6px 10px; border-radius: 4px; background: #f1f1f1; }
+    .msg .author { font-weight: bold; font-size: 0.85em; color: #555; }
+    .input-group { display: flex; gap: 5px; margin-bottom: 5px; }
+    input { padding: 8px; font-size: 14px; }
+    #token { flex: 1; }
+    #message { flex: 2; }
+    button { padding: 8px 15px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <h2>💬 GitHub Issue 기반 실시간 채팅</h2>
+
+  <div class="input-group">
+    <input type="password" id="token" placeholder="GitHub Personal Access Token (public_repo 권한)">
+  </div>
+
+  <div id="chat-box">채팅을 불러오는 중...</div>
+
+  <div class="input-group">
+    <input type="text" id="message" placeholder="메시지를 입력하세요...">
+    <button onclick="sendMessage()">전송</button>
+  </div>
+
+  <script>
+    // ⚠️ 아래 설정값을 본인의 조직 및 레포지토리 정보로 변경하세요.
+    const CONFIG = {
+      owner: "YOUR_ORGANIZATION_NAME",  // 조직 이름
+      repo: "YOUR_REPO_NAME",           // 레포지토리 이름
+      issueNumber: 1                    // 채팅방으로 사용할 Issue 번호
+    };
+
+    const API_URL = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/issues/${CONFIG.issueNumber}/comments`;
+
+    // 1. 메시지 불러오기 (Polling 방식)
+    async function fetchMessages() {
+      try {
+        const res = await fetch(API_URL);
+        if (!res.ok) throw new Error("불러오기 실패");
+        const comments = await res.json();
+        
+        const chatBox = document.getElementById('chat-box');
+        chatBox.innerHTML = comments.map(c => `
+          <div class="msg">
+            <div class="author">${c.user.login} (${new Date(c.created_at).toLocaleTimeString()})</div>
+            <div>${c.body}</div>
+          </div>
+        `).join('');
+        
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } catch (err) {
+        document.getElementById('chat-box').innerText = "메시지를 불러오는 데 실패했습니다. 설정 및 Issue 번호를 확인하세요.";
+      }
+    }
+
+    // 2. 메시지 전송하기
+    async function sendMessage() {
+      const token = document.getElementById('token').value.trim();
+      const messageInput = document.getElementById('message');
+      const text = messageInput.value.trim();
+
+      if (!token) return alert("GitHub Token을 입력해주세요.");
+      if (!text) return;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Authorization": `token ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ body: text })
+        });
+
+        if (res.ok) {
+          messageInput.value = "";
+          fetchMessages();
+        } else {
+          alert("전송 실패: 토큰 권한을 확인하세요.");
+        }
+      } catch (err) {
+        alert("에러가 발생했습니다.");
+      }
+    }
+
+    // 3 초마다 새 메시지 갱신
+    setInterval(fetchMessages, 3000);
+    fetchMessages();
+  </script>
+</body>
+</html>
